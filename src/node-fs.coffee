@@ -6,17 +6,17 @@ app.service 'nodeFs',[->
     require 'fs'
 ]
 
+app.factory 'ngIfy',['nodeFs',(nodeFs)->
+    (name)->
+        promisify nodeFs[name]
+]
+
 app.factory 'ngStat',['ngIfy',(ngIfy)->
     ngIfy 'stat'
 ]
 
 app.factory 'ngReaddir',['ngIfy',(ngIfy)->
     ngIfy 'readdir'
-]
-
-app.factory 'ngIfy',['nodeFs',(nodeFs)->
-    (name)->
-        promisify nodeFs[name]
 ]
 
 app.factory '_isDir', [->
@@ -69,10 +69,10 @@ app.factory 'isDirSync',['nodeFs','_isDir',(nodeFs,_isDir)->
         _isDir nodeFs.statSync(name)
 ]
 
-app.factory 'isDir',['ngStat',(ngStat)->
+app.factory 'isDir',['ngStat','_idDir',(ngStat,_isDir)->
     (name)->
         ngStat(name).then (res)->
-            actualResult =  res.blksize == res.size
+            actualResult =  _isDir res
 ]
 
 app.factory 'listDir',['ngReaddir',(ngReaddir)->
