@@ -5,8 +5,6 @@ module.exports = function(){ require('./dist/node-fs.js');
     var isFile = ng_load('isFile');
     var isFileSync = ng_load('isFileSync');
     var listDir = ng_load('listDir');
-    var doListDir = ng_load('doListDir');
-    var ldr = ng_load('listDirResult');
     var $q = ng_load('$q');
     var $rootScope = ng_load("$rootScope");
     var $scope = $rootScope.$new();
@@ -57,7 +55,6 @@ module.exports = function(){ require('./dist/node-fs.js');
               console.log('listing items in ',name,JSON.stringify(res));
               for(var i = 0; i < res.length; i++){
                   console.log(res[i]);
-                  console.log(JSON.stringify(res));
               }    
 
               def.resolve(res);
