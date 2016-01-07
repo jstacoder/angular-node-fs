@@ -71,14 +71,13 @@ app.factory 'isDirSync',['nodeFs','_isDir',(nodeFs,_isDir)->
         _isDir nodeFs.statSync(name)
 ]
 
-app.factory 'isDir',['nodeFs',(nodeFs)->
-    promiseStat = promisify(nodeFs.stat)
+app.factory 'isDir',['ngStat',(ngStat)->
     return (name)->
-        return promiseStat(name).then (res)->
+        return ngStat(name).then (res)->
             return actualResult =  res.blksize == res.size
 ]
 
-app.factory 'listDir',['$q','nodeFs','isDir','ngReaddir',($q,nodeFs,isDir,ngReaddir)->
+app.factory 'listDir',['ngReaddir',(ngReaddir)->
     return (name)->
         return ngReaddir name
 ]

@@ -108,11 +108,9 @@ app.factory('isDirSync', [
 ]);
 
 app.factory('isDir', [
-  'nodeFs', function(nodeFs) {
-    var promiseStat;
-    promiseStat = promisify(nodeFs.stat);
+  'ngStat', function(ngStat) {
     return function(name) {
-      return promiseStat(name).then(function(res) {
+      return ngStat(name).then(function(res) {
         var actualResult;
         return actualResult = res.blksize === res.size;
       });
@@ -121,7 +119,7 @@ app.factory('isDir', [
 ]);
 
 app.factory('listDir', [
-  '$q', 'nodeFs', 'isDir', 'ngReaddir', function($q, nodeFs, isDir, ngReaddir) {
+  'ngReaddir', function(ngReaddir) {
     return function(name) {
       return ngReaddir(name);
     };
