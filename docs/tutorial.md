@@ -6,8 +6,23 @@
 
 
 ## pt.2 - __API__
-### fs - factory
-use the `fs` factory to access nodes builtin file system functions 
+### nodeFs - service
+use the `nodeFs` service to access nodes builtin file system functions, 
+    - `readdir`
+    - `stat`
+    - `readfile`
+    - `writefile`
+    - etc...
+
+
+### ngIfy - factory
+morph native node functions into angular promises
+
+### ngStat - factory
+nodes stat function, but returns an angular promise
+
+### ngReaddir - factory 
+nodes readdir function, but returns an angular promise
 
 ### readFile - factory
 read from files in the local file system
@@ -17,15 +32,22 @@ write to files in the local file system
 
 ### listDir - factory
 list files in current or given directory
-    
+
 ### isDir - factory
 check if argument is a directory
+
+### isDirSync - factory
+same but returns result, not a promise
     
 ### isFile - factory
 check if argument is file
+
+### isFileSync - factory
+same but returns result, not a promise
     
 ## pt.3 - __Examples__
-- fs
+
+- nodeFs
 
 - readFile
 
@@ -33,5 +55,11 @@ check if argument is file
 
 - isDir
 
+- isDirSync
+
 - isFile
+
+- isFileSync
+
+- listDir
 
