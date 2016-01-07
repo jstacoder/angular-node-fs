@@ -130,3 +130,61 @@ app.factory 'listDir',['ngReaddir',(ngReaddir)->
         ngReaddir name
 ]
 ```
+
+now we can write a few little tests to be sure things worked as planned,
+because i hate compiling "everytime" i make a change, when i write my tests, 
+i switch back to using standard javascript, because node-ng is still javascript
+but i will rewrite it in coffee soon enough.
+
+```coffeescript
+module.exports = ()->
+    require './dist/node-fs.js'
+
+    isDir = ng_load 'isDir',['node.fs.app']
+    isDirSync = ng_load 'isDirSync'
+    isFile = ng_load 'isFile'
+    isFileSync = ng_load 'isFileSync'
+    listDir = ng_load 'listDir'
+    readFile = ng_load 'readFile'
+    writeFile = ng_load 'writeFile'
+    $q = ng_load '$q'
+
+
+    # test data 
+    firstTestItem = './dist/node-fs.js'
+    secondTestItem = './dist'
+    thirdTestItem = './src'
+    fourthTestItem = './src/node-fs.coffee'
+
+    testItems =
+        firstTestItem,
+        secondTestItem,
+        thirdTestItem,
+        fourthTestItem
+
+    # blocking tests
+    console.log 'Starting blocking tests'
+
+    console.log 'testing isDirSync'
+
+    testItem = (func,itm)->
+        func itm
+
+    testDirItem = (itm)->
+        result = testItem isDirSync,itm
+        "#{itm} is a directory? ---> [#{result}]"
+
+    for itm in testItems
+        console.log testDirItem(itm)
+    
+    console.log "testing isFileSync"
+
+    testFileItem = (itm)->
+        result = testItem isFileSync itm
+        "#{itm} is a file? ---> [#{result}]"
+    
+    for itm in testItems
+        console.log testFileItem(itm)
+    
+
+```
