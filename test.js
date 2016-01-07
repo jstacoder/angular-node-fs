@@ -6,6 +6,9 @@ module.exports = function(){ require('./dist/node-fs.js');
     var isFileSync = ng_load('isFileSync');
     var listDir = ng_load('listDir');
     var $q = ng_load('$q');
+    var writeFile = ng_load('writeFile');
+    var readFile = ng_load('readFile');
+
     var $rootScope = ng_load("$rootScope");
     var $scope = $rootScope.$new();
                 
@@ -86,4 +89,12 @@ module.exports = function(){ require('./dist/node-fs.js');
   doListDir('./').then(function(r){
       console.log("AAAAAAA",JSON.stringify(ldr));
   });*/
+
+  var testFileContent = 'this is a string';
+
+  writeFile("tst.txt",testFileContent).then(function(res){ 
+      return readFile("tst.txt");
+  }).then(function(res){ 
+      console.log('read this data: ',String(res));
+  });
 };
