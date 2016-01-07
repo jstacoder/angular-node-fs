@@ -4,7 +4,7 @@ var app;
 
 app = angular.module('node.fs.app', []);
 
-app.factory('nodeFs', [
+app.service('nodeFs', [
   function() {
     return require('fs');
   }

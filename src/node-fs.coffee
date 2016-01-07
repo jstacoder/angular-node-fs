@@ -2,8 +2,8 @@
 
 app = angular.module 'node.fs.app',[]
 
-app.factory 'nodeFs',[->
-    return require 'fs'
+app.service 'nodeFs',[->
+    require 'fs'
 ]
 
 app.factory 'ngStat',['ngIfy',(ngIfy)->
