@@ -8,7 +8,11 @@ module.exports = function(){ require('./dist/node-fs.js');
     var doListDir = ng_load('doListDir');
     var ldr = ng_load('listDirResult');
     var $q = ng_load('$q');
+    var $rootScope = ng_load("$rootScope");
+    var $scope = $rootScope.$new();
                 
+    
+    console.log(new $q(function(res){ return 55;}));
     //ng_bootstrap(angular.module('app',[]));
 
     var firstTestItem = './dist/node-fs.js',
@@ -43,13 +47,12 @@ module.exports = function(){ require('./dist/node-fs.js');
   isFile(fourthTestItem).then(function(res){
     console.log(res,"sb - true");
   });
-
   function showFiles(name){
       var def = $q.defer(),
           res;
       return (function(){
-          var p = listDir.run(name);
-          p.then(function(res){
+          var p = listDir(name);
+          $q.when(p.then(function(res){
 
               console.log('listing items in ',name,JSON.stringify(res));
               for(var i = 0; i < res.length; i++){
@@ -58,15 +61,21 @@ module.exports = function(){ require('./dist/node-fs.js');
               }    
 
               def.resolve(res);
-          });
+          },function(err){
+              console.log("EEEEE",err);
+          }))
+        //.then(function(){
+        //  $rootScope.$apply();
+        //  });
           return def.promise;
       })();
   }
-  showFiles("./").then(showFiles(thirdTestItem));
 
-  var p = listDir.run("xxx");
+  $q.all(showFiles("./").then(showFiles(thirdTestItem)));
+
+    //var p = listDir.run("./dist");
   //console.log(JSON.stringify(p.$$state.pending[0].promise));
-  p.then(function(res){
+  /*p.then(function(res){
       console.log('listing items in ',"./",JSON.stringify(res));
       for(var i = 0; i < res.length; i++){
           console.log(res[i]);
@@ -74,8 +83,10 @@ module.exports = function(){ require('./dist/node-fs.js');
       }    
       showFiles("./");
       showFiles(secondTestItem);
+  },function(err){
+    console.log("Late Error: ",err);
   });
   doListDir('./').then(function(r){
       console.log("AAAAAAA",JSON.stringify(ldr));
-  });
+  });*/
 };

@@ -6,8 +6,17 @@ app.factory 'nodeFs',[->
     return require 'fs'
 ]
 
-app.factory 'ngStat',['nodeFs',(nodeFs)->
-    return promisify nodeFs.stat
+app.factory 'ngStat',['ngIfy',(ngIfy)->
+    return  ngIfy 'stat'
+]
+
+app.factory 'ngReaddir',['ngIfy',(ngIfy)->
+    return ngIfy 'readdir'
+]
+
+app.factory 'ngIfy',['nodeFs',(nodeFs)->
+    return (name)->
+        return promisify nodeFs[name]
 ]
 
 app.factory '_isDir', [->
@@ -69,49 +78,7 @@ app.factory 'isDir',['nodeFs',(nodeFs)->
             return actualResult =  res.blksize == res.size
 ]
 
-app.service 'listDirResult',[->
-    results = []
-    add = (itm)->
-        results.push(itm) if not itm in results
-    remove = (itm)->
-        idx = results.indexOf itm
-        results.splice(idx,1)
-    get = ->
-        results
-    rtn =
-        add:add
-        remove:remove
-        get:get
-    return rtn
-]
-
-app.factory 'doListDir',['nodeFs','listDirResult',(nodeFs,listDirResult)->
+app.factory 'listDir',['$q','nodeFs','isDir','ngReaddir',($q,nodeFs,isDir,ngReaddir)->
     return (name)->
-        ldr = listDirResult
-        func = promisify(nodeFs.readdir)
-        func(name).then (r)->
-            for itm in r
-                ldr.add itm
+        return ngReaddir name
 ]
-
-app.service 'listDir',['$q','nodeFs','isDir',($q,nodeFs,isDir)->
-    def = $q.defer()
-    res = null
-    r = null
-
-    listFunc = (name)->
-        isDir(name).then (res)->
-            if not res
-                console.log "rejecting: #{res},#{name}"
-                def.reject "#{name} is a file"
-            else
-                func = promisify(nodeFs.readdir)
-                func(name).then (r)->
-                        def.resolve r
-            return
-        return def.promise
-    rtn =
-        run:listFunc
-    rtn
-]
-

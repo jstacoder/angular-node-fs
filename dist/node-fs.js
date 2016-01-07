@@ -1,7 +1,6 @@
 'use strict';
 
-var app,
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+var app;
 
 app = angular.module('node.fs.app', []);
 
@@ -12,8 +11,22 @@ app.factory('nodeFs', [
 ]);
 
 app.factory('ngStat', [
+  'ngIfy', function(ngIfy) {
+    return ngIfy('stat');
+  }
+]);
+
+app.factory('ngReaddir', [
+  'ngIfy', function(ngIfy) {
+    return ngIfy('readdir');
+  }
+]);
+
+app.factory('ngIfy', [
   'nodeFs', function(nodeFs) {
-    return promisify(nodeFs.stat);
+    return function(name) {
+      return promisify(nodeFs[name]);
+    };
   }
 ]);
 
@@ -107,76 +120,10 @@ app.factory('isDir', [
   }
 ]);
 
-app.service('listDirResult', [
-  function() {
-    var add, get, remove, results, rtn;
-    results = [];
-    add = function(itm) {
-      var _ref;
-      if (_ref = !itm, __indexOf.call(results, _ref) >= 0) {
-        return results.push(itm);
-      }
-    };
-    remove = function(itm) {
-      var idx;
-      idx = results.indexOf(itm);
-      return results.splice(idx, 1);
-    };
-    get = function() {
-      return results;
-    };
-    rtn = {
-      add: add,
-      remove: remove,
-      get: get
-    };
-    return rtn;
-  }
-]);
-
-app.factory('doListDir', [
-  'nodeFs', 'listDirResult', function(nodeFs, listDirResult) {
+app.factory('listDir', [
+  '$q', 'nodeFs', 'isDir', 'ngReaddir', function($q, nodeFs, isDir, ngReaddir) {
     return function(name) {
-      var func, ldr;
-      ldr = listDirResult;
-      func = promisify(nodeFs.readdir);
-      return func(name).then(function(r) {
-        var itm, _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = r.length; _i < _len; _i++) {
-          itm = r[_i];
-          _results.push(ldr.add(itm));
-        }
-        return _results;
-      });
+      return ngReaddir(name);
     };
-  }
-]);
-
-app.service('listDir', [
-  '$q', 'nodeFs', 'isDir', function($q, nodeFs, isDir) {
-    var def, listFunc, r, res, rtn;
-    def = $q.defer();
-    res = '';
-    r = '';
-    listFunc = function(name) {
-      isDir(name).then(function(res) {
-        var func;
-        if (!res) {
-          console.log("rejecting: " + res + "," + name);
-          def.reject("" + name + " is a file");
-        } else {
-          func = promisify(nodeFs.readdir);
-          func(name).then(function(r) {
-            return def.resolve(r);
-          });
-        }
-      });
-      return def.promise;
-    };
-    rtn = {
-      run: listFunc
-    };
-    return rtn;
   }
 ]);
