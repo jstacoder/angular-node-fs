@@ -66,19 +66,8 @@ app.factory('isFile', [
 ]);
 
 app.factory('readFile', [
-  '$q', 'nodeFs', function($q, nodeFs) {
-    var def;
-    def = $q.defer();
-    return function(filename) {
-      nodeFs.readFile(filename, function(err, res) {
-        if (err) {
-          def.reject(err);
-        } else {
-          def.resolve(res);
-        }
-      });
-      return def.promise;
-    };
+  '$q', 'nodeFs', 'ngIfy', function($q, nodeFs, ngIfy) {
+    return ngIfy(nodeFs.readFile);
   }
 ]);
 

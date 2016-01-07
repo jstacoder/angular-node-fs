@@ -42,7 +42,6 @@ app.factory 'isFile',['ngStat','_isFile',(ngStat,_isFile)->
 
 app.factory 'readFile',['$q','nodeFs',($q,nodeFs)->
     def = $q.defer()
-
     (filename)->
         nodeFs.readFile filename,(err,res)->
             if err
@@ -55,7 +54,6 @@ app.factory 'readFile',['$q','nodeFs',($q,nodeFs)->
 
 app.factory 'writeFile',['$q','nodeFs',($q,nodeFs)->
     def = $q.defer()
-
     (filename,data)->
         nodeFs.writeFile filename, data,(err,res)->
             if err
