@@ -135,9 +135,9 @@ now we can write a few little tests to be sure things worked as planned.
 
 ```coffeescript
 module.exports = ()->
-    require './dist/node-fs.js'
+    require '../dist/node-fs.js'
 
-    fmtstr = require './fstr.coffee'
+    fmtstr = require '../fstr.coffee'
 
     isDir = ng_load 'isDir',['node.fs.app']
     isDirSync = ng_load 'isDirSync'
@@ -183,24 +183,92 @@ module.exports = ()->
     for itm in testItems
         console.log fmtstr(testFileItem(itm),"--",60)
 
+    doDirTests = ->
+        testDirItem2 = (itm)->
+            testItem(isDir,itm).then (res)->
+                "\nWe are testing if #{itm} is a dir, is it? ---> [#{res}]\n"
+
+        for itm in testItems
+            testDirItem2(itm).then (res)->
+                console.log fmtstr(res, '--',80)
+            ,(err)->
+                console.log "ERROR@!:",err
+
+    doFileTests = ->
+        testFileItem2 = (itm)->
+            testItem(isFile,itm).then (res)->
+                "\nWe are testing if #{itm} is a file, is it? ---> [#{res}]\n"
+
+        for itm in testItems
+            testFileItem2(itm).then (res)->
+                console.log fmtstr("#{res}", '--',80)
+            ,(err)->
+                console.log "ERROR@!:",err
+            console.log "counting #{testItems.indexOf(itm)}"
+
+    doListDirTests = ->
+        listDir('./dist').then (res)->
+            count = 0
+            count++ for r in res
+            console.log "Should have 1 file, had: #{count}"
+
+        listDir('./src').then (res)->
+            count = 0
+            count++ for r in res
+            console.log "Should have 1 file, had: #{count}"
+
+    doReadWriteTests = ->
+        tstTxt = "this is a test file"
+        tstName = "tst.txt"
+
+        writeFile(tstName,tstTxt).then (res)->
+            readFile(tstName).then (res)->
+                console.log "Data from #{tstName}\n#{res}\n\nData from variable\n#{tstTxt}"
+
     console.log '\nstarting non-blocking tests\n'
-
-    console.log '\ntesting isDir\n'
-    
-    testDirItem2 = (itm)->
-        testItem(isDir,itm).then (res)->
-            "We are testing if #{itm} is a dir, is it? 
-
-    console.log(testDirItem2(itm)) for itm in testItems
-
-
-    console.log '\ntesting isFile\n'
-    
-    testFileItem2 = (itm)->
-        testItem(isFile,itm).then (res)->
-            "We are testing if #{itm} is a file, is it?"
-
-    console.log(testFileItem2(itm)) for itm in testItems
-
-
+    do doDirTests
+    do doFileTests
+    do doListDirTests
+    do doReadWriteTests
 ```
+
+Also you may have noticed im using a function `fmtstr` which i am 
+pulling from `fstr.coffee`, this is just a string formatting abstraction
+which i felt was so unrelated to this projects goals that it needed to be in its own 
+file, here is the contents of `fstr.coffee`:
+
+```coffeescript
+makePadd = (char,num)->
+    res = []
+    for x in [1..num]
+        res.push char
+    res.join ""
+
+fmtstr = (s,splitchar,size,padchar)->
+    splitchar = splitchar or '--'
+    size = size or 40
+    padchar = padchar or ' '
+    #console.log s
+    parts = String(s).split(splitchar)
+    padlen = size - (parts[0].length + parts[1].length)
+    padd = makePadd padchar,padlen
+    "#{parts[0]}#{padd}#{parts[1]}"
+
+module.exports = fmtstr
+```
+
+Now that's all we need from nodes `fs` module for now. Lets take a look
+at the different things weve managed to accomplish:
+- checking if file is dir or not
+- reading files
+- writing files
+- and listing directorys
+- and all of these features are integrated into the angular workflow
+
+Thanks for coming along on this journey with me, we have made progress, but still have a ways to go.
+This was part 2 of an ongoing saga, where i attempt to use angular serverside.
+Join me next time, when we will be working on rendering templates from strings and files, in part by
+using the module we coded today, `node.fs.app`
+
+also all of the code from this blog post can be found on github => [here](https://github.com/jstacoder/angular-node-fs)
+
