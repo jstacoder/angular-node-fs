@@ -4,7 +4,7 @@
   "description": "use nodes rfs module as angular service",
   "main": "dist/node-fs.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/node-ng/node-ng.js ./tests/test2.js"
   },
   "keywords": [
     "angular",
@@ -12,5 +12,9 @@
     "fs"
   ],
   "author": "Kyle Roux <kyle@level2designs.com> (https://github.com/jstacoder)",
-  "license": "BSD2"
+  "license": "BSD2",
+  "dependencies": {
+    "benv": "^3.0.0",
+    "node-ng": "0.0.5"
+  }
 }

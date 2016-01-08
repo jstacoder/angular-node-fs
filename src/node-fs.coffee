@@ -2,6 +2,24 @@
 
 app = angular.module 'node.fs.app',[]
 
+app.constant 'EQ','==='
+
+app.constant 'NQ','!=='
+
+app.factory 'getOperator',['EQ','NQ',(EQ,NQ)->
+    opLst =
+        "EQ":EQ
+        "NQ":NQ
+   
+    (op)->
+        opLst[op]
+]
+
+app.factory 'produceResult',['getOperator',(getOperator)->
+    (leftSide,rightSide,op)->
+        eval "#{leftSide}#{getOperator op }#{rightSide}"
+]
+
 app.service 'nodeFs',[->
     require 'fs'
 ]
@@ -19,14 +37,23 @@ app.factory 'ngReaddir',['ngIfy',(ngIfy)->
     ngIfy 'readdir'
 ]
 
-app.factory '_isDir', [->
-    (res)->
-        res.blksize == res.size
+app.factory '_isType',['produceResult',(produceResult)->
+    typeOps =
+        "dir" : "EQ"
+        "file": "NQ"
+        
+    (leftSide,rightSide,type)->
+        produceResult leftSide,rightSide,typeOps[type]
 ]
 
-app.factory '_isFile', [->
+app.factory '_isDir', ['_isType', (_isType)->
     (res)->
-        res.blksize != res.size
+        _isType res.blksize, res.size, 'dir'
+]
+
+app.factory '_isFile', ['_isType',(_isType)->
+    (res)->
+        _isType res.blksize,res.size,'file'
 ]
 
 app.factory 'isFileSync',['nodeFs','_isFile',(nodeFs,_isFile)->
@@ -69,7 +96,7 @@ app.factory 'isDirSync',['nodeFs','_isDir',(nodeFs,_isDir)->
         _isDir nodeFs.statSync(name)
 ]
 
-app.factory 'isDir',['ngStat','_idDir',(ngStat,_isDir)->
+app.factory 'isDir',['ngStat','_isDir',(ngStat,_isDir)->
     (name)->
         ngStat(name).then (res)->
             actualResult =  _isDir res

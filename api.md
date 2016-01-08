@@ -131,14 +131,13 @@ app.factory 'listDir',['ngReaddir',(ngReaddir)->
 ]
 ```
 
-now we can write a few little tests to be sure things worked as planned,
-because i hate compiling "everytime" i make a change, when i write my tests, 
-i switch back to using standard javascript, because node-ng is still javascript
-but i will rewrite it in coffee soon enough.
+now we can write a few little tests to be sure things worked as planned.
 
 ```coffeescript
 module.exports = ()->
     require './dist/node-fs.js'
+
+    fmtstr = require './fstr.coffee'
 
     isDir = ng_load 'isDir',['node.fs.app']
     isDirSync = ng_load 'isDirSync'
@@ -156,35 +155,52 @@ module.exports = ()->
     thirdTestItem = './src'
     fourthTestItem = './src/node-fs.coffee'
 
-    testItems =
-        firstTestItem,
-        secondTestItem,
-        thirdTestItem,
-        fourthTestItem
+    testItems = []
+    for i in [firstTestItem,secondTestItem,thirdTestItem,fourthTestItem]
+        testItems.push i
 
     # blocking tests
-    console.log 'Starting blocking tests'
+    console.log 'Starting blocking tests\n'
 
-    console.log 'testing isDirSync'
+    console.log '\ntesting isDirSync\n'
 
     testItem = (func,itm)->
         func itm
 
     testDirItem = (itm)->
         result = testItem isDirSync,itm
-        "#{itm} is a directory? ---> [#{result}]"
+        "is #{itm} a directory? ---> [#{result}]"
 
     for itm in testItems
-        console.log testDirItem(itm)
+        console.log fmtstr(testDirItem(itm),"--",60)
     
-    console.log "testing isFileSync"
+    console.log "\ntesting isFileSync\n"
 
     testFileItem = (itm)->
-        result = testItem isFileSync itm
-        "#{itm} is a file? ---> [#{result}]"
+        result = testItem isFileSync,itm
+        "is #{itm} a file? ---> [#{result}]"
     
     for itm in testItems
-        console.log testFileItem(itm)
+        console.log fmtstr(testFileItem(itm),"--",60)
+
+    console.log '\nstarting non-blocking tests\n'
+
+    console.log '\ntesting isDir\n'
     
+    testDirItem2 = (itm)->
+        testItem(isDir,itm).then (res)->
+            "We are testing if #{itm} is a dir, is it? 
+
+    console.log(testDirItem2(itm)) for itm in testItems
+
+
+    console.log '\ntesting isFile\n'
+    
+    testFileItem2 = (itm)->
+        testItem(isFile,itm).then (res)->
+            "We are testing if #{itm} is a file, is it?"
+
+    console.log(testFileItem2(itm)) for itm in testItems
+
 
 ```

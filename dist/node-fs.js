@@ -4,9 +4,42 @@ var app;
 
 app = angular.module('node.fs.app', []);
 
+app.constant('EQ', '===');
+
+app.constant('NQ', '!==');
+
+app.factory('getOperator', [
+  'EQ', 'NQ', function(EQ, NQ) {
+    var opLst;
+    opLst = {
+      "EQ": EQ,
+      "NQ": NQ
+    };
+    return function(op) {
+      return opLst[op];
+    };
+  }
+]);
+
+app.factory('produceResult', [
+  'getOperator', function(getOperator) {
+    return function(leftSide, rightSide, op) {
+      return eval("" + leftSide + (getOperator(op)) + rightSide);
+    };
+  }
+]);
+
 app.service('nodeFs', [
   function() {
     return require('fs');
+  }
+]);
+
+app.factory('ngIfy', [
+  'nodeFs', function(nodeFs) {
+    return function(name) {
+      return promisify(nodeFs[name]);
+    };
   }
 ]);
 
@@ -22,26 +55,31 @@ app.factory('ngReaddir', [
   }
 ]);
 
-app.factory('ngIfy', [
-  'nodeFs', function(nodeFs) {
-    return function(name) {
-      return promisify(nodeFs[name]);
+app.factory('_isType', [
+  'produceResult', function(produceResult) {
+    var typeOps;
+    typeOps = {
+      "dir": "EQ",
+      "file": "NQ"
+    };
+    return function(leftSide, rightSide, type) {
+      return produceResult(leftSide, rightSide, typeOps[type]);
     };
   }
 ]);
 
 app.factory('_isDir', [
-  function() {
+  '_isType', function(_isType) {
     return function(res) {
-      return res.blksize === res.size;
+      return _isType(res.blksize, res.size, 'dir');
     };
   }
 ]);
 
 app.factory('_isFile', [
-  function() {
+  '_isType', function(_isType) {
     return function(res) {
-      return res.blksize !== res.size;
+      return _isType(res.blksize, res.size, 'file');
     };
   }
 ]);
@@ -66,8 +104,19 @@ app.factory('isFile', [
 ]);
 
 app.factory('readFile', [
-  '$q', 'nodeFs', 'ngIfy', function($q, nodeFs, ngIfy) {
-    return ngIfy(nodeFs.readFile);
+  '$q', 'nodeFs', function($q, nodeFs) {
+    var def;
+    def = $q.defer();
+    return function(filename) {
+      nodeFs.readFile(filename, function(err, res) {
+        if (err) {
+          def.reject(err);
+        } else {
+          def.resolve(res);
+        }
+      });
+      return def.promise;
+    };
   }
 ]);
 
@@ -97,11 +146,11 @@ app.factory('isDirSync', [
 ]);
 
 app.factory('isDir', [
-  'ngStat', function(ngStat) {
+  'ngStat', '_isDir', function(ngStat, _isDir) {
     return function(name) {
       return ngStat(name).then(function(res) {
         var actualResult;
-        return actualResult = res.blksize === res.size;
+        return actualResult = _isDir(res);
       });
     };
   }
