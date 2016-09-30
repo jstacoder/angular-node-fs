@@ -1,6 +1,6 @@
 {
   "name": "angular-node-fs",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "use nodes rfs module as angular service",
   "main": "dist/node-fs.js",
   "scripts": {
