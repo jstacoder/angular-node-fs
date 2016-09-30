@@ -2,24 +2,6 @@
 
 app = angular.module 'node.fs.app',[]
 
-app.constant 'EQ','==='
-
-app.constant 'NQ','!=='
-
-app.factory 'getOperator',['EQ','NQ',(EQ,NQ)->
-    opLst =
-        "EQ":EQ
-        "NQ":NQ
-   
-    (op)->
-        opLst[op]
-]
-
-app.factory 'produceResult',['getOperator',(getOperator)->
-    (leftSide,rightSide,op)->
-        eval "#{leftSide}#{getOperator op }#{rightSide}"
-]
-
 app.service 'nodeFs',[->
     require 'fs'
 ]
@@ -33,38 +15,43 @@ app.factory 'ngStat',['ngIfy',(ngIfy)->
     ngIfy 'stat'
 ]
 
+app.factory 'ngStatSync',['nodeFs',(nodeFs)->
+    (path)->
+        nodeFs.statSync path
+]
+
 app.factory 'ngReaddir',['ngIfy',(ngIfy)->
     ngIfy 'readdir'
 ]
 
-app.factory '_isType',['produceResult',(produceResult)->
-    typeOps =
-        "dir" : "EQ"
-        "file": "NQ"
+app.factory '_isType',['ngStatSync',(ngStatSync)->
+    typeFuncs =
+        "dir" : "isDirectory"
+        "file": "isFile"
         
-    (leftSide,rightSide,type)->
-        produceResult leftSide,rightSide,typeOps[type]
+    (name,type)->
+        do ngStatSync ( name ) [ typeFuncs [ type ] ]
 ]
 
 app.factory '_isDir', ['_isType', (_isType)->
-    (res)->
-        _isType res.blksize, res.size, 'dir'
+    (path)->
+        _isType path , 'dir'
 ]
 
 app.factory '_isFile', ['_isType',(_isType)->
-    (res)->
-        _isType res.blksize,res.size,'file'
+    (path)->
+        _isType path,'file'
 ]
 
 app.factory 'isFileSync',['nodeFs','_isFile',(nodeFs,_isFile)->
     (name)->
-        _isFile nodeFs.statSync(name)
+        do nodeFs.statSync(name).isFile
 ]
 
 app.factory 'isFile',['ngStat','_isFile',(ngStat,_isFile)->
     (name)->
         ngStat(name).then (res)->
-            actualResult = _isFile(res)
+            actualResult = do res.isFile
 ]
 
 app.factory 'readFile',['$q','nodeFs',($q,nodeFs)->
@@ -93,13 +80,13 @@ app.factory 'writeFile',['$q','nodeFs',($q,nodeFs)->
 
 app.factory 'isDirSync',['nodeFs','_isDir',(nodeFs,_isDir)->
     (name)->
-        _isDir nodeFs.statSync(name)
+        do nodeFs.statSync(name).isDirectory
 ]
 
 app.factory 'isDir',['ngStat','_isDir',(ngStat,_isDir)->
     (name)->
         ngStat(name).then (res)->
-            actualResult =  _isDir res
+            actualResult = do res.isDirectory
 ]
 
 app.factory 'listDir',['ngReaddir',(ngReaddir)->

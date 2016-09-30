@@ -1,6 +1,6 @@
 {
   "name": "angular-node-fs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "use nodes rfs module as angular service",
   "main": "dist/node-fs.js",
   "scripts": {
@@ -15,6 +15,6 @@
   "license": "BSD2",
   "dependencies": {
     "benv": "^3.0.0",
-    "node-ng": "0.0.5"
+    "node-ng": "0.0.13"
   }
 }

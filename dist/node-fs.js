@@ -1,33 +1,7 @@
 'use strict';
-
 var app;
 
 app = angular.module('node.fs.app', []);
-
-app.constant('EQ', '===');
-
-app.constant('NQ', '!==');
-
-app.factory('getOperator', [
-  'EQ', 'NQ', function(EQ, NQ) {
-    var opLst;
-    opLst = {
-      "EQ": EQ,
-      "NQ": NQ
-    };
-    return function(op) {
-      return opLst[op];
-    };
-  }
-]);
-
-app.factory('produceResult', [
-  'getOperator', function(getOperator) {
-    return function(leftSide, rightSide, op) {
-      return eval("" + leftSide + (getOperator(op)) + rightSide);
-    };
-  }
-]);
 
 app.service('nodeFs', [
   function() {
@@ -49,6 +23,14 @@ app.factory('ngStat', [
   }
 ]);
 
+app.factory('ngStatSync', [
+  'nodeFs', function(nodeFs) {
+    return function(path) {
+      return nodeFs.statSync(path);
+    };
+  }
+]);
+
 app.factory('ngReaddir', [
   'ngIfy', function(ngIfy) {
     return ngIfy('readdir');
@@ -56,30 +38,30 @@ app.factory('ngReaddir', [
 ]);
 
 app.factory('_isType', [
-  'produceResult', function(produceResult) {
-    var typeOps;
-    typeOps = {
-      "dir": "EQ",
-      "file": "NQ"
+  'ngStatSync', function(ngStatSync) {
+    var typeFuncs;
+    typeFuncs = {
+      "dir": "isDirectory",
+      "file": "isFile"
     };
-    return function(leftSide, rightSide, type) {
-      return produceResult(leftSide, rightSide, typeOps[type]);
+    return function(name, type) {
+      return ngStatSync(name([typeFuncs([type])]))();
     };
   }
 ]);
 
 app.factory('_isDir', [
   '_isType', function(_isType) {
-    return function(res) {
-      return _isType(res.blksize, res.size, 'dir');
+    return function(path) {
+      return _isType(path, 'dir');
     };
   }
 ]);
 
 app.factory('_isFile', [
   '_isType', function(_isType) {
-    return function(res) {
-      return _isType(res.blksize, res.size, 'file');
+    return function(path) {
+      return _isType(path, 'file');
     };
   }
 ]);
@@ -87,7 +69,7 @@ app.factory('_isFile', [
 app.factory('isFileSync', [
   'nodeFs', '_isFile', function(nodeFs, _isFile) {
     return function(name) {
-      return _isFile(nodeFs.statSync(name));
+      return nodeFs.statSync(name).isFile();
     };
   }
 ]);
@@ -97,7 +79,7 @@ app.factory('isFile', [
     return function(name) {
       return ngStat(name).then(function(res) {
         var actualResult;
-        return actualResult = _isFile(res);
+        return actualResult = res.isFile();
       });
     };
   }
@@ -140,7 +122,7 @@ app.factory('writeFile', [
 app.factory('isDirSync', [
   'nodeFs', '_isDir', function(nodeFs, _isDir) {
     return function(name) {
-      return _isDir(nodeFs.statSync(name));
+      return nodeFs.statSync(name).isDirectory();
     };
   }
 ]);
@@ -150,7 +132,7 @@ app.factory('isDir', [
     return function(name) {
       return ngStat(name).then(function(res) {
         var actualResult;
-        return actualResult = _isDir(res);
+        return actualResult = res.isDirectory();
       });
     };
   }

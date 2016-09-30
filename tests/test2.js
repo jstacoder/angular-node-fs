@@ -1,5 +1,6 @@
 module.exports = function() {
   var $q, doDirTests, doFileTests, doListDirTests, doReadWriteTests, firstTestItem, fmtstr, fourthTestItem, i, isDir, isDirSync, isFile, isFileSync, itm, listDir, readFile, secondTestItem, testDirItem, testFileItem, testItem, testItems, thirdTestItem, writeFile, _i, _j, _k, _len, _len1, _len2, _ref;
+  require('coffee-script/register');
   require('../dist/node-fs.js');
   fmtstr = require('../fstr.coffee');
   isDir = ng_load('isDir', ['node.fs.app']);
